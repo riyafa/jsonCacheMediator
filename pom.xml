@@ -4,8 +4,8 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>org.riyafa</groupId>
-    <artifactId>org.riyafa</artifactId>
+    <groupId>org.wso2.carbon.mediator.cache.json</groupId>
+    <artifactId>org.wso2.carbon.mediator.cache.json</artifactId>
     <version>1.0-SNAPSHOT</version>
     <packaging>bundle</packaging>
     <repositories>
@@ -44,7 +44,7 @@
                         <Bundle-Name>${project.artifactId}</Bundle-Name>
                         <Bundle-SymbolicName>${project.artifactId}</Bundle-SymbolicName>
                         <Export-Package>
-                            org.riyafa.*,
+                            org.wso2.carbon.mediator.cache.json.*,
                         </Export-Package>
                         <Fragment-Host>synapse-core</Fragment-Host>
                     </instructions>

@@ -1,4 +1,4 @@
-package org.riyafa;
+package org.wso2.carbon.mediator.cache.json;
 
 import org.apache.axis2.context.MessageContext;
 import org.apache.commons.logging.Log;

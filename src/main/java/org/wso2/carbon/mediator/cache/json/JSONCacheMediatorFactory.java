@@ -1,4 +1,4 @@
-package org.riyafa;
+package org.wso2.carbon.mediator.cache.json;
 
 import org.apache.axiom.om.OMAttribute;
 import org.apache.axiom.om.OMElement;

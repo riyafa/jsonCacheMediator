@@ -16,7 +16,7 @@
  * under the License.
  */
 
-package org.riyafa;
+package org.wso2.carbon.mediator.cache.json;
 
 import java.io.Serializable;
 import java.util.Map;

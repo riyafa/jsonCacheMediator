@@ -1,4 +1,4 @@
-package org.riyafa;
+package org.wso2.carbon.mediator.cache.json;
 
 import org.apache.axiom.om.OMElement;
 import org.apache.axis2.Constants;
@@ -12,11 +12,14 @@ import org.apache.synapse.MessageContext;
 import org.apache.synapse.SynapseLog;
 import org.apache.synapse.commons.json.JsonUtil;
 import org.apache.synapse.config.SynapseConfiguration;
+import org.apache.synapse.continuation.ContinuationStackManager;
 import org.apache.synapse.core.SynapseEnvironment;
 import org.apache.synapse.core.axis2.Axis2MessageContext;
+import org.apache.synapse.core.axis2.Axis2Sender;
 import org.apache.synapse.debug.constructs.EnclosedInlinedSequence;
 import org.apache.synapse.mediators.AbstractMediator;
 import org.apache.synapse.mediators.base.SequenceMediator;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -26,7 +29,6 @@ import javax.cache.CacheBuilder;
 import javax.cache.CacheConfiguration;
 import javax.cache.CacheManager;
 import javax.cache.Caching;
-import javax.xml.stream.XMLStreamException;
 
 /**
  * Created by riyafa on 7/10/17.
@@ -220,6 +222,35 @@ public class JSONCacheMediator extends AbstractMediator implements ManagedLifecy
                     }
                 } catch (Exception ex) {
                     handleException("Error setting response envelope from cache : " + cacheKey, synCtx);
+                }
+                // take specified action on cache hit
+                if (onCacheHitSequence != null) {
+                    // if there is an onCacheHit use that for the mediation
+                    synLog.traceOrDebug("Delegating message to the onCachingHit "
+                                                + "Anonymous sequence");
+                    ContinuationStackManager.addReliantContinuationState(synCtx, 0, getMediatorPosition());
+                    if (onCacheHitSequence.mediate(synCtx)) {
+                        ContinuationStackManager.removeReliantContinuationState(synCtx);
+                    }
+
+                } else if (onCacheHitRef != null) {
+                    if (synLog.isTraceOrDebugEnabled()) {
+                        synLog.traceOrDebug("Delegating message to the onCachingHit " +
+                                                    "sequence : " + onCacheHitRef);
+                    }
+                    ContinuationStackManager.updateSeqContinuationState(synCtx, getMediatorPosition());
+                    synCtx.getSequence(onCacheHitRef).mediate(synCtx);
+
+                } else {
+
+                    if (synLog.isTraceOrDebugEnabled()) {
+                        synLog.traceOrDebug("Request message " + synCtx.getMessageID() +
+                                                    " was served from the cache : " + cacheKey);
+                    }
+                    // send the response back if there is not onCacheHit is specified
+                    synCtx.setTo(null);
+                    Axis2Sender.sendBack(synCtx);
+
                 }
             } else {
                 cachedResponse.reincarnate(timeout);
