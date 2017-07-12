@@ -15,13 +15,10 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.riyafa;
+package org.wso2.carbon.mediator.cache.json.util;
 
 import java.io.Serializable;
 
-/**
- * Represents a SOAP Request Hash
- */
 public class RequestHash implements Serializable {
 
 	/**

@@ -1,14 +1,15 @@
-package org.riyafa;
+package org.wso2.carbon.mediator.cache.json.digest;
 
 import org.apache.axis2.context.MessageContext;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.wso2.carbon.mediator.cache.json.CachingException;
 
 import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
-public class ReqUrlHashGenerator implements DigestGenerator{
+public class ReqUrlHashGenerator implements DigestGenerator {
 
     private static final Log log = LogFactory.getLog(ReqUrlHashGenerator.class);
 

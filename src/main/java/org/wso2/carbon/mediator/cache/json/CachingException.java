@@ -16,7 +16,7 @@
  * under the License.
  */
 
-package org.riyafa;
+package org.wso2.carbon.mediator.cache.json;
 
 /**
  * This is the CachingException which is a checked exception and will be thrown in case of

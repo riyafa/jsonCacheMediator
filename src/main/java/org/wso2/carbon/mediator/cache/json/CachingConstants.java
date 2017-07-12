@@ -16,9 +16,11 @@
  * under the License.
  */
 
-package org.riyafa;
+package org.wso2.carbon.mediator.cache.json;
 
 import org.apache.synapse.config.xml.XMLConfigConstants;
+import org.wso2.carbon.mediator.cache.json.digest.DigestGenerator;
+import org.wso2.carbon.mediator.cache.json.digest.ReqUrlHashGenerator;
 
 import javax.xml.namespace.QName;
 
@@ -37,7 +39,7 @@ public final class CachingConstants {
 	public static final String CACHE_MANAGER = "cacheManager";
 
 	/** QName of the cache mediator which will be used by the module */
-	public static final QName CACHE_Q = new QName(XMLConfigConstants.SYNAPSE_NAMESPACE, "jsoncache");
+	public static final QName CACHE_Q = new QName(XMLConfigConstants.SYNAPSE_NAMESPACE, "jsonCache");
 
 	/** Default DigestGenerator for the caching impl */
 	public static final DigestGenerator DEFAULT_XML_IDENTIFIER = new ReqUrlHashGenerator();
@@ -61,7 +63,7 @@ public final class CachingConstants {
 	public static final int DEFAULT_CACHE_SIZE = 1000;
 
 	/** Primary cache name */
-	public static final String MEDIATOR_CACHE = "mediatorCache";
+	public static final String MEDIATOR_CACHE = "mediatorJsonCache";
 
 	/** Default cache invalidation time */
 	public static final Integer CACHE_INVALIDATION_TIME = 1000 * 24 * 3600;

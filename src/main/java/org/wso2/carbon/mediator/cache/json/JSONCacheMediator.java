@@ -1,4 +1,4 @@
-package org.riyafa;
+package org.wso2.carbon.mediator.cache.json;
 
 import org.apache.axiom.om.OMElement;
 import org.apache.axis2.Constants;
@@ -6,31 +6,29 @@ import org.apache.axis2.clustering.ClusteringFault;
 import org.apache.axis2.clustering.state.Replicator;
 import org.apache.axis2.context.ConfigurationContext;
 import org.apache.axis2.context.OperationContext;
+import org.apache.axis2.clustering.state.Replicator;
 import org.apache.synapse.ManagedLifecycle;
 import org.apache.synapse.Mediator;
 import org.apache.synapse.MessageContext;
 import org.apache.synapse.SynapseLog;
 import org.apache.synapse.commons.json.JsonUtil;
 import org.apache.synapse.config.SynapseConfiguration;
+import org.apache.synapse.continuation.ContinuationStackManager;
 import org.apache.synapse.core.SynapseEnvironment;
 import org.apache.synapse.core.axis2.Axis2MessageContext;
+import org.apache.synapse.core.axis2.Axis2Sender;
 import org.apache.synapse.debug.constructs.EnclosedInlinedSequence;
 import org.apache.synapse.mediators.AbstractMediator;
 import org.apache.synapse.mediators.base.SequenceMediator;
+import org.wso2.carbon.mediator.cache.json.digest.DigestGenerator;
+import org.wso2.carbon.mediator.cache.json.util.RequestHash;
+
+import javax.cache.*;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
-import javax.cache.Cache;
-import javax.cache.CacheBuilder;
-import javax.cache.CacheConfiguration;
-import javax.cache.CacheManager;
-import javax.cache.Caching;
-import javax.xml.stream.XMLStreamException;
 
-/**
- * Created by riyafa on 7/10/17.
- */
 public class JSONCacheMediator extends AbstractMediator implements ManagedLifecycle, EnclosedInlinedSequence {
     /**
      * Cache configuration ID.
@@ -169,7 +167,7 @@ public class JSONCacheMediator extends AbstractMediator implements ManagedLifecy
         synLog.traceOrDebug("End : Cache mediator");
 
 
-        return true;
+        return result;
     }
 
     private boolean processRequestMessage(MessageContext synCtx, SynapseLog synLog) throws ClusteringFault {
@@ -221,6 +219,39 @@ public class JSONCacheMediator extends AbstractMediator implements ManagedLifecy
                 } catch (Exception ex) {
                     handleException("Error setting response envelope from cache : " + cacheKey, synCtx);
                 }
+
+                // take specified action on cache hit
+                if (onCacheHitSequence != null) {
+                    // if there is an onCacheHit use that for the mediation
+                    synLog.traceOrDebug("Delegating message to the onCachingHit "
+                            + "Anonymous sequence");
+                    ContinuationStackManager.addReliantContinuationState(synCtx, 0, getMediatorPosition());
+                    if (onCacheHitSequence.mediate(synCtx)) {
+                        ContinuationStackManager.removeReliantContinuationState(synCtx);
+                    }
+
+                } else if (onCacheHitRef != null) {
+                    if (synLog.isTraceOrDebugEnabled()) {
+                        synLog.traceOrDebug("Delegating message to the onCachingHit " +
+                                "sequence : " + onCacheHitRef);
+                    }
+                    ContinuationStackManager.updateSeqContinuationState(synCtx, getMediatorPosition());
+                    synCtx.getSequence(onCacheHitRef).mediate(synCtx);
+
+                } else {
+
+                    if (synLog.isTraceOrDebugEnabled()) {
+                        synLog.traceOrDebug("Request message " + synCtx.getMessageID() +
+                                " was served from the cache : " + cacheKey);
+                    }
+                    // send the response back if there is not onCacheHit is specified
+                    synCtx.setTo(null);
+                    Axis2Sender.sendBack(synCtx);
+
+                }
+                // continue or stop any following mediators from executing
+                return true;
+
             } else {
                 cachedResponse.reincarnate(timeout);
                 if (synLog.isTraceOrDebugEnabled()) {
@@ -248,7 +279,7 @@ public class JSONCacheMediator extends AbstractMediator implements ManagedLifecy
         Replicator.replicate(opCtx);
     }
 
-    private void processResponseMessage(MessageContext synCtx, ConfigurationContext cfgCtx, SynapseLog synLog) {
+    private void processResponseMessage(MessageContext synCtx, ConfigurationContext cfgCtx, SynapseLog synLog) throws ClusteringFault {
         if (!collector) {
             handleException("Response messages cannot be handled in a non collector cache", synCtx);
         }
@@ -272,7 +303,7 @@ public class JSONCacheMediator extends AbstractMediator implements ManagedLifecy
 
                 if (JsonUtil.jsonPayloadToByteArray(msgCtx).length > maxMessageSize) {
                     synLog.traceOrDebug(
-                            "Message size exceeds the upper bound for caching, request will not be cached");
+                            "response message size exceeds the upper bound for caching, response will not be cached");
                     return;
                 }
 
@@ -294,6 +325,13 @@ public class JSONCacheMediator extends AbstractMediator implements ManagedLifecy
                 response.setHeaderProperties(headerProperties);
             }
 
+            if (response.getTimeout() > 0) {
+                response.setExpireTimeMillis(System.currentTimeMillis() + response.getTimeout());
+            }
+
+            getMediatorCache().put(response.getRequestHash(), response);
+            // Finally, we may need to replicate the changes in the cache
+            Replicator.replicate(cfgCtx);
         }
     }
 

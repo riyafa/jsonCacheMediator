@@ -14,9 +14,10 @@
  * limitations under the License.
  */
 
-package org.riyafa;
+package org.wso2.carbon.mediator.cache.json.digest;
 
 import org.apache.axis2.context.MessageContext;
+import org.wso2.carbon.mediator.cache.json.CachingException;
 
 import java.io.Serializable;
 

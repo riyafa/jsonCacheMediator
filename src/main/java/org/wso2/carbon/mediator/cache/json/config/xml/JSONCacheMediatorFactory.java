@@ -1,4 +1,4 @@
-package org.riyafa;
+package org.wso2.carbon.mediator.cache.json.config.xml;
 
 import org.apache.axiom.om.OMAttribute;
 import org.apache.axiom.om.OMElement;
@@ -8,14 +8,14 @@ import org.apache.synapse.Mediator;
 import org.apache.synapse.config.xml.AbstractMediatorFactory;
 import org.apache.synapse.config.xml.SequenceMediatorFactory;
 import org.apache.synapse.config.xml.XMLConfigConstants;
+import org.wso2.carbon.mediator.cache.json.CachingConstants;
+import org.wso2.carbon.mediator.cache.json.digest.DigestGenerator;
+import org.wso2.carbon.mediator.cache.json.JSONCacheMediator;
 
 import java.util.Iterator;
 import java.util.Properties;
 import javax.xml.namespace.QName;
 
-/**
- * Created by riyafa on 7/10/17.
- */
 public class JSONCacheMediatorFactory extends AbstractMediatorFactory {
     /**
      * Log object to use when logging is required in this class.

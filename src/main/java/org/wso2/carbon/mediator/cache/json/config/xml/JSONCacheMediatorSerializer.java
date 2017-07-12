@@ -1,16 +1,15 @@
-package org.riyafa;
+package org.wso2.carbon.mediator.cache.json.config.xml;
 
 import org.apache.axiom.om.OMElement;
 import org.apache.synapse.Mediator;
 import org.apache.synapse.config.xml.AbstractMediatorSerializer;
 import org.apache.synapse.config.xml.MediatorSerializer;
 import org.apache.synapse.config.xml.MediatorSerializerFinder;
+import org.wso2.carbon.mediator.cache.json.JSONCacheMediator;
 
 import java.util.List;
 
-/**
- * Created by riyafa on 7/10/17.
- */
+
 public class JSONCacheMediatorSerializer extends AbstractMediatorSerializer {
     @Override
     public OMElement serializeSpecificMediator(Mediator m) {
@@ -19,7 +18,7 @@ public class JSONCacheMediatorSerializer extends AbstractMediatorSerializer {
             handleException("Unsupported mediator passed in for serialization : " + m.getType());
         }
         JSONCacheMediator mediator = (JSONCacheMediator) m;
-        OMElement cache = fac.createOMElement("jsoncache", synNS);
+        OMElement cache = fac.createOMElement("jsonCache", synNS);
         saveTracingState(cache, mediator);
 
         if (mediator.getId() != null) {
